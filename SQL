@@ -1,0 +1,50 @@
+1. USE SQL to create a histogram (distribution of a column)
+
+First, we need to define the # of bins and calculate the min, max, and the size of bucket:
+For example, if we define the # of bins to be 10:
+
+SELECT (max(open) - min(open)+1)/10.00 as bucket_size, max(open), min(open)
+FROM tutorial.aapl_historical_stock_price
+
+OUTPUT:
+-70.241  702.41  0
+
+Then we need to assign each row to the bucket from 0 to 9 using floor().
+SELECT floor(open-0)/70.341, COUNT(*) as num_of_observations
+FROM tutorial.aapl_historical_stock_price
+GROUP BY 1
+ORDER BY 1
+
+
+
+2. Use SQL to find the median.
+1) if using window function -- find the 50th percentile
+SELECT  percentile_cont(0.5) WITHIN GROUP (ORDER BY open) as median
+FROM tutorial.aapl_historical_stock_price
+
+
+2) if using window function rank()
+SELECT max(rank_open)
+FROM 
+      (SELECT id, open, CASE WHEN open is NULL THEN NULL ELSE RANK() OVER (ORDER BY open) END as rank_open
+      FROM tutorial.aapl_historical_stock_price
+      WHERE open IS NOT NULL
+      ORDER BY 3 DESC) sub
+
+--Note that RANK() will count NULL as unlimitedly large.
+
+
+3) if using self-join
+SELECT *
+FROM
+      (SELECT a.open, COUNT(b.open) as rank_open
+      FROM tutorial.aapl_historical_stock_price a
+      JOIN tutorial.aapl_historical_stock_price b
+      ON b.open<a.open OR (a.open = b.open AND b.id <= a.id)
+      GROUP BY a.open, a.id
+      ORDER BY rank_open DESC) sub
+WHERE rank_open = 3542/2
+
+
+3. 
+
