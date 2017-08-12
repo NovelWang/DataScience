@@ -46,5 +46,102 @@ FROM
 WHERE rank_open = 3542/2
 
 
-3. 
+3. Check the questions here:
+https://github.com/joshualande/joshualande.github.io/blob/master/_drafts/2014-02-04-challening-sql-queries.md
+1). For each region, find the minimum surface area for countries that are in the top five for best life expectancy.
+
+     SELECT min(b.surface_area),b.region
+     FROM
+            (SELECT code
+            FROM country
+            ORDER BY life_exp DESC LIMIT 5) a
+      JOIN country b
+      On a.code = b.code
+      GROUP by b.region
+
+2). Find the top ten countries with the most languages. 
+Return the full country names as well as the number of shared languages.
+Sort in descending order by the number of shared lanuages.
+
+SELECT sub.country_code, c.name, sub.num_lan
+FROM
+      (SELECT country_code, COUNT(language) as num_lan
+      FROM country_language
+      GROUP BY country_code
+      ORDER BY num_lan DESC
+      LIMIT 10) sub
+JOIN country c
+ON sub.country_code = c.code
+ORDER BY sub.num_lan DESC
+
+3). Do a histogram on life_expectancy
+SELECT floor(life_expectancy/10) as bin_seq, COUNT(code)
+FROM country
+GROUP BY 1
+
+
+
+4. Check the questions here:
+https://github.com/joshualande/joshualande.github.io/blob/master/_drafts/2014-06-07-analytics-sql.md
+
+For each user in the last month, compute the number of days that the user logged in.
+Next, for each rolling 30 day period, compute the number of login days.
+
+SELECT a.benchmark, b.user_id, COUNT(DISTINCT b.date_id)
+FROM
+    (SELECT DISTINCT date_id as benchmark
+    FROM engagement) a
+JOIN engagement b
+ON b.date_id< a. benchmark AND b.date_id >= a.benchmark - interval '1 month'
+WHERE action_id = 'profile'
+GROUP BY 1, 2
+
+OR using window function:
+
+SELECT user_id, day, 
+COUNT(day) OVER (PARTITION BY user_id ORDER BY day ROWS BETWEEN 10 preceding AND current row) as num_login
+FROM
+(SELECT DISTINCT DATE_TRUNC('day', occurred_at) as day, user_id
+FROM tutorial.yammer_events
+ORDER BY 1) sub
+
+
+5. Stanford Lagunita --highschooler, friend, likes
+
+Q9. Find the name and grade of all students who are liked by more than one other student. 
+
+SELECT h.name, h.grade
+(SELECT ID2, COUNT(ID1) as num_fans
+FROM likes
+GROUP BY ID2
+HAVING num_fans >=2) sub
+JOIN highschooler h
+ON sub.ID2 = h.ID
+
+
+Q7. For each student A who likes a student B where the two are not friends,
+find if they have a friend C in common (who can introduce them!). 
+For all such trios, return the name and grade of A, B, and C.
+
+        SELECT h1.name, h1.grade, h2.name, h2.grade,h3.name, h3.grade
+        FROM
+        (SELECT DISTINCT a.*
+        FROM
+        (SELECT l.ID1 as A, f1.ID2 as A_f, l.ID2 as B, f2.ID2 as B_f
+        FROM likes l
+        JOIN friend f1, friend f2
+        ON l.ID1 = f1.ID1 AND l.ID2 = f2.ID1
+        WHERE A_f = B_f) a
+        LEFT JOIN friend f
+        ON a.A = f.ID1 AND a.B = f.ID2
+        WHERE f.ID1 IS NULL) sub 
+        JOIN highschooler h1, highschooler h2, highschooler h3
+        ON sub.A = h1.ID AND sub.B = h2.ID AND sub.B_f = h3.ID
+
+ 
+
+
+
+
+
 
