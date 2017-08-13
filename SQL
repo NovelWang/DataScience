@@ -227,5 +227,215 @@ PART II. SOCIAL NETWORK QUERIES EXTRAS
 PART III. SQL Social-Network Modification Exercises
 
 
+/* For the following quries, you can run them on SQL MODE ANALYTICS */
+6. Pivot a table
+--(1)
+SELECT user_id, sum(CASE WHEN event_name = 'like_message' THEN num_events ELSE NULL END) AS like_msg,
+SUM(CASE WHEN event_name = 'login' THEN num_events ELSE NULL END) AS login,
+SUM(CASE WHEN event_name = 'send_message' THEN num_events ELSE NULL END) AS send_msg
+FROM
+(SELECT user_id, event_name, COUNT(occurred_at) as num_events
+FROM tutorial.yammer_events
+WHERE event_name='login' or event_name = 'like_message' or event_name = 'send_message'
+GROUP BY 1,2
+ORDER BY 1,2) sub
+GROUP BY 1
+
+--(2) pivot the earthquake table
+SELECT *
+  FROM tutorial.worldwide_earthquakes
+
+--how to add a column 'year' and a column 'num'
+SELECT year
+FROM (VALUES (2000),(2001),(2002),(2003),(2004),(2005),(2006),
+               (2007),(2008),(2009),(2010),(2011),(2012)) v(year)
+               
+SELECT day_of_week
+FROM (VALUES ('Monday'), ('Tue'), ('Wed')) v(day_of_week)
+
+--create the new table
+SELECT magnitude, year, 
+CASE WHEN year = '2000' THEN year_2000
+     WHEN year = '2001' THEN year_2001
+     WHEN year = '2002' THEN year_2002
+     WHEN year = '2003' THEN year_2003
+     WHEN year = '2004' THEN year_2004
+     WHEN year = '2005' THEN year_2005
+     WHEN year = '2006' THEN year_2006
+     WHEN year = '2007' THEN year_2007
+     WHEN year = '2008' THEN year_2008
+     WHEN year = '2009' THEN year_2009
+     WHEN year = '2010' THEN year_2010
+     WHEN year = '2011' THEN year_2011
+     WHEN year = '2012' THEN year_2012
+     ELSE NULL END AS num_earthquakes
+FROM
+(SELECT e.*, sub.*
+FROM tutorial.worldwide_earthquakes e
+CROSS JOIN 
+(SELECT year
+FROM (VALUES (2000),(2001),(2002),(2003),(2004),(2005),(2006),
+               (2007),(2008),(2009),(2010),(2011),(2012)) v(year)) sub) subtable
+
+
+7. Calculate the # of users using each pair of platforms
+
+SELECT user_id,CASE WHEN platform = 'mac' THEN 1 ELSE 0 END AS mac,
+CASE WHEN platform = 'iphone' THEN 1 ELSE 0 END AS iphone,CASE WHEN platform = 'ipad' THEN 1 ELSE 0 END AS ipad
+FROM
+(SELECT *,
+CASE WHEN device = 'iphone 5' THEN 'iphone' WHEN device = 'macbook pro' THEN 'mac' WHEN device LIKE 'ipad%' THEN 'ipad'
+ELSE NULL END AS platform
+FROM tutorial.yammer_events) sub
+WHERE platform IS NOT NULL
+               
+8. Define Session and map that session to the original event table
+SELECT t.*, map.seq_num, map.this_session_start, map.next_session_start
+FROM
+(SELECT sub.*, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY occurred_at) AS seq_num,
+occurred_at as this_session_start,
+CASE WHEN LEAD(sub.occurred_at) OVER (PARTITION BY user_id ORDER BY occurred_at) IS NULL THEN '2017-08-09 12:00:00'
+ELSE LEAD(sub.occurred_at) OVER (PARTITION BY user_id ORDER BY occurred_at) END AS next_session_start
+FROM
+(SELECT user_id, occurred_at, (occurred_at - lag (occurred_at) OVER (PARTITION BY user_id ORDER BY occurred_at))::INTERVAL AS time_diff
+FROM tutorial.yammer_events) sub
+WHERE sub.time_diff> INTERVAL '1 day' OR sub.time_diff IS NULL
+ORDER BY user_id) map
+JOIN  tutorial.yammer_events t
+ON map.user_id = t.user_id
+AND t.occurred_at< map.next_session_start AND t.occurred_at >= map.this_session_start
+WHERE t.user_id = 4
+ORDER BY t.occurred_at
+
+
+9. Calculate engagement metrics using tutorial.yammer_events
+SELECT *
+FROM tutorial.yammer_events
+
+----(1) Accounting for user growth
+------A. MAU active: any events
+SELECT COUNT(DISTINCT user_id) as MAU, DATE_TRUNC('week', occurred_at) as week
+FROM tutorial.yammer_events
+GROUP BY week
+ORDER BY week
+
+------B. DAU: active: any event
+SELECT DATE_TRUNC('day',occurred_at) as day, COUNT(DISTINCT user_id) as DAU
+FROM tutorial.yammer_events
+GROUP BY day
+ORDER BY day
+
+------C. Monthly churn rate for each day, monthly churn: active in the previous 30-60 days but not active in the previous 30 days
+
+SELECT sub.benchmark, COUNT(CASE WHEN c.user_id IS NULL THEN sub.user_id ELSE NULL END) AS num_churned, 
+COUNT(sub.user_id) AS num_active, COUNT(CASE WHEN c.user_id IS NULL THEN sub.user_id ELSE NULL END)* 100/COUNT(sub.user_id) AS churn_rate
+FROM
+(SELECT DISTINCT b.user_id,a.*
+FROM 
+(SELECT DISTINCT DATE_TRUNC('day', occurred_at) as benchmark
+FROM tutorial.yammer_events) a
+JOIN tutorial.yammer_events b
+ON b.occurred_at >= a.benchmark - INTERVAL '2 months' AND b.occurred_at > a.benchmark - INTERVAL '1 month'
+ORDER BY 2,1) sub
+LEFT JOIN tutorial.yammer_events c
+ON c.occurred_at >= sub.benchmark-INTERVAL '1 month' AND c.occurred_at <sub.benchmark
+AND sub.user_id = c.user_id
+GROUP BY sub.benchmark
+
+-----D. Calculate the # of resurrected (active in 2 months ago, not active in 60-30 days, active in last 30 days) for each day
+SELECT sub2.benchmark, COUNT(DISTINCT sub2.user_id)
+FROM
+      (SELECT DISTINCT sub.user_id, sub.benchmark
+       FROM
+          (SELECT DISTINCT b.user_id, a.benchmark
+           FROM
+                (SELECT DISTINCT DATE_TRUNC('day', occurred_at) AS benchmark 
+                FROM tutorial.yammer_events) a
+          JOIN tutorial.yammer_events b
+          ON b.occurred_at < a.benchmark - INTERVAL '2 months') sub
+       JOIN tutorial.yammer_events c
+       ON sub.user_id = c.user_id
+       AND  c.occurred_at>sub.benchmark- INTERVAL '1 month' AND c.occurred_at<sub.benchmark) sub2
+LEFT JOIN tutorial.yammer_events d
+ON sub2.user_id = d.user_id
+AND d.occurred_at >sub2.benchmark - INTERVAL '2 months' AND d.occurred_at <sub2.benchmark - INTERVAL '1 month'
+WHERE d.user_id IS NULL
+GROUP BY 1
+
+------sanity check
+SELECT COUNT(sub.user_id) as num_total
+FROM
+(SELECT DISTINCT a.user_id
+FROM
+(SELECT DISTINCT user_id
+FROM tutorial.yammer_events 
+WHERE occurred_at < '2014-06-05') a
+JOIN 
+(SELECT DISTINCT user_id
+FROM tutorial.yammer_events 
+WHERE occurred_at > '2014-07-05' AND occurred_at< '2014-08-05') b
+ON a.user_id = b.user_id) sub
+LEFT JOIN 
+(SELECT DISTINCT user_id
+FROM tutorial.yammer_events 
+WHERE occurred_at > '2014-06-05' AND occurred_at< '2014-07-05') c
+ON sub.user_id = c.user_id
+WHERE c.user_id IS NOT NULL
+
+---- CALCULATE # of resurrected metrics by month
+SELECT sub.month, COUNT(DISTINCT sub.user_id)
+FROM
+(SELECT DISTINCT b.user_id, a.month
+FROM
+  (SELECT DISTINCT user_id, DATE_TRUNC('month',occurred_at) AS month FROM tutorial.yammer_events) a 
+  JOIN (SELECT DISTINCT user_id, DATE_TRUNC('month',occurred_at) AS month FROM tutorial.yammer_events) b
+  ON b.month <  a.month-INTERVAL '1 month' AND a.user_id = b.user_id) sub
+LEFT JOIN (SELECT DISTINCT user_id, DATE_TRUNC('month',occurred_at) AS month
+FROM tutorial.yammer_events) c
+ON sub.user_id = c.user_id
+AND sub.month = c.month + INTERVAL '1 month'
+WHERE c.user_id IS NULL
+GROUP BY 1
+ORDER BY 1
+
+----E. Calculate # of new users for each day
+
+SELECT first_day, COUNT(DISTINCT user_id)
+FROM
+(SELECT user_id, min(DATE_TRUNC('day', occurred_at)) as first_day
+FROM tutorial.yammer_events
+GROUP BY 1) sub
+GROUP BY 1
+ORDER BY 1
+
+----F. Calculate the # of retained (active in 60-30 days and also active in 30-0 days) users for each day
+
+SELECT sub.benchmark, COUNT(DISTINCT c.user_id)
+FROM
+      (SELECT DISTINCT b.user_id, a.benchmark
+      FROM
+            (SELECT DISTINCT DATE_TRUNC('day', occurred_at) AS benchmark
+            FROM tutorial.yammer_events) a
+      JOIN tutorial.yammer_events b
+      ON  b.occurred_at > a.benchmark -INTERVAL '2 months'
+      AND b.occurred_at < a.benchmark -INTERVAL '1 month') sub
+JOIN tutorial.yammer_events c
+ON sub.user_id = c.user_id AND  c.occurred_at < sub.benchmark AND  c.occurred_at> sub.benchmark - INTERVAL '1 month'
+GROUP BY 1
+ORDER BY 1
+
+--Sanity check: calculate # of retained users for 8/31: active from 7/31-8/31 and active from 6/31-8/31
+
+SELECT COUNT(DISTINCT a.user_id)
+FROM 
+(SELECT DISTINCT user_id
+FROM tutorial.yammer_events 
+WHERE occurred_at< '2014-08-31' AND occurred_at> '2014-07-31') a
+JOIN 
+(SELECT DISTINCT user_id
+FROM tutorial.yammer_events 
+WHERE occurred_at< '2014-07-31' AND occurred_at> '2014-06-30') b
+ON a.user_id = b.user_id
+
 
 
