@@ -1,0 +1,28 @@
+1. WINDOW function is when you do an operation only within a window,
+    window is usually defined by 
+    OVER (PARTITION BY colA ORDER BY colB)
+    And you can add additional limitations such as
+    OVER (PARTITION BY col A ORDER BY colB ROWS BETWEEN 10 preceding AND current ROW)
+
+
+2. What are the operaions that can be used in window functions
+(1) all aggregate functions: sum(), count(), avg(), max(), min()
+(2) lag and lead: lag(col_A) gives you the previous row of col_A, lead(col_A) gives you the next row of col_A
+    By default, lad() and lead() is gapped by 1 row, but you can specify it to be as many as you want.
+    lag(col_A, 2)
+    lead(col_B, 3)
+(3) ntile(): this will assign each row to be different bucket.
+    ntile(4) -- quartiles
+    ntile(5) -- quintiles
+(4) ROW_NUMBER(), RANK(), DENSE_RANK()
+(5) percentile_cont()
+    This will give you the nth percentile as you specified.
+    e.g. SELECT percentile_cont(0) WITHIN GROUP (ORDER BY price) as price_min,
+         percentile_cont(0.25) WITHIN GROUP (ORDER BY price) as price_25th,
+         percentile_cont(0.5) WITHIN GROUP (ORDER BY price) as price_50th,
+         percentile_cont(0.75) WITHIN GROUP (ORDER BY price) as price_75th,
+         percentile_cont(1) WITHIN GROUP (ORDER BY price) as price_max
+         FROM table
+         
+         
+
