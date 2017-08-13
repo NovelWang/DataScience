@@ -107,21 +107,87 @@ ORDER BY 1) sub
 
 
 5. Stanford Lagunita --highschooler, friend, likes
+PART I. SOCIAL NETWORK QUERIES
 
-Q9. Find the name and grade of all students who are liked by more than one other student. 
+Q1. Find the names of all students who are friends with someone named Gabriel. (EASY)
+SELECT h1.name
+FROM friend f
+JOIN highschooler h1, highschooler h2
+ON f.ID1 = h1.ID
+AND f.ID2 = h2.ID
+WHERE h2.name = 'Gabriel'
+
+
+Q2. For every student who likes someone 2 or more grades younger than themselves,
+return that student's name and grade, and the name and grade of the student they like. (EASY)
+SELECT h1.name, h1.grade, h2.name, h2.grade
+FROM likes l
+JOIN highschooler h1, highschooler h2
+ON l.ID1 = h1.ID AND l.ID2 = h2.ID
+WHERE h1.grade - h2.grade >=2
+
+
+
+Q3. For every pair of students who both like each other, 
+return the name and grade of both students. 
+Include each pair only once, with the two names in alphabetical order. (MEDIUM)
+
+SELECT DISTINCT h1.name, h1.grade, h2.name, h2.grade
+FROM likes l1, highschooler h1
+JOIN likes l2, highschooler h2
+ON l1.ID1 = l2.ID2
+AND l1.ID2 = l2.ID1
+AND l1.ID1 = h1.ID
+AND l1.ID2 = h2.ID
+AND h1.name< h2.name
+ORDER BY h1.name
+
+Q4. Find all students who do not appear in the Likes table (as a student who likes or is liked) 
+and return their names and grades. Sort by grade, then by name within each grade. (EASY)
+SELECT h.name, h.grade
+FROM highschooler h
+LEFT JOIN likes l
+ON h.ID = l.ID1
+OR h.ID = l.ID2
+WHERE l.ID1 IS NULL AND l.ID2 IS NULL
+ORDER BY h.grade, h.name
+
+Q5. For every situation where student A likes student B, but we have no information about whom B likes 
+(that is, B does not appear as an ID1 in the Likes table), return A and B's names and grades. (EASY)
+SELECT h1.name, h1.grade, h2.name, h2.grade
+FROM
+(SELECT l1.ID1, l1.ID2
+FROM likes l1
+LEFT JOIN likes l2
+ON l1.ID2 = l2.ID1
+WHERE l2.ID1 IS NULL) sub
+JOIN highschooler h1, highschooler h2
+ON sub.ID1 = h1.ID AND sub.ID2 = h2.ID
+
+Q6. Find names and grades of students who only have friends in the same grade.
+Return the result sorted by grade, then by name within each grade. (MEDIUM)
 
 SELECT h.name, h.grade
-(SELECT ID2, COUNT(ID1) as num_fans
-FROM likes
-GROUP BY ID2
-HAVING num_fans >=2) sub
+FROM
+      (SELECT DISTINCT f.ID1
+      FROM friend f
+      WHERE f.ID1 NOT IN
+                        (SELECT DISTINCT f.ID1
+                        FROM friend f
+                        JOIN highschooler h1, highschooler h2
+                        ON f.ID1 = h1.ID AND f.ID2 = h2.ID 
+                        WHERE h1.grade!=h2.grade)
+      ) sub
 JOIN highschooler h
-ON sub.ID2 = h.ID
+ON sub.ID1 = h.ID
+ORDER BY h.grade, h.name
+
+
 
 
 Q7. For each student A who likes a student B where the two are not friends,
 find if they have a friend C in common (who can introduce them!). 
-For all such trios, return the name and grade of A, B, and C.
+For all such trios, return the name and grade of A, B, and C. (medium)
 
         SELECT h1.name, h1.grade, h2.name, h2.grade,h3.name, h3.grade
         FROM
@@ -139,8 +205,26 @@ For all such trios, return the name and grade of A, B, and C.
         ON sub.A = h1.ID AND sub.B = h2.ID AND sub.B_f = h3.ID
 
  
+Q8. Find the difference between the number of students in the school and the number of different first names. (EASY)
+SELECT COUNT(*) - COUNT(DISTINCT name)
+FROM highschooler
 
 
+Q9. Find the name and grade of all students who are liked by more than one other student. 
+
+SELECT h.name, h.grade
+(SELECT ID2, COUNT(ID1) as num_fans
+FROM likes
+GROUP BY ID2
+HAVING num_fans >=2) sub
+JOIN highschooler h
+ON sub.ID2 = h.ID
+
+
+PART II. SOCIAL NETWORK QUERIES EXTRAS
+
+
+PART III. SQL Social-Network Modification Exercises
 
 
 
