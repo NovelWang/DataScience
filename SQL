@@ -223,8 +223,168 @@ ON sub.ID2 = h.ID
 
 PART II. SOCIAL NETWORK QUERIES EXTRAS
 
+Q1. For every situation where student A likes student B, but student B likes a different student C, 
+return the names and grades of A, B, and C. (Easy)
+
+SELECT h1.name,h1.grade,h2.name,h2.grade,h3.name,h3.grade
+FROM
+(SELECT l1.ID1 as A, l1.ID2 as B, l2.ID2 as C
+FROM likes l1
+JOIN likes l2
+ON l1.ID2  = l2.ID1
+WHERE l2.ID2 !=l1.ID1) sub
+JOIN highschooler h1, highschooler h2, highschooler h3
+ON sub.A = h1.ID AND sub.B = h2.ID AND sub.C = h3.ID
+
+
+Q2. Find those students for whom all of their friends are in different grades from themselves. 
+Return the students' names and grades. (Medium)
+
+Solution 1:
+SELECT DISTINCT h.name, h.grade
+FROM friend f
+JOIN highschooler h
+ON f.ID1 = h.ID
+WHERE f.ID1 NOT IN
+(SELECT a.ID1
+FROM
+(SELECT f.*, h1.grade AS A_grade, h1.name as A_name, h2.grade as B_grade, h2.name as B_name
+FROM friend f
+JOIN highschooler h1, highschooler h2
+ON f.ID1 = h1.ID AND f.ID2 = h2.ID) a
+WHERE A_grade = B_grade)
+
+Solution 2:
+SELECT name, grade
+FROM highschooler 
+WHERE ID IN 
+(SELECT f.ID1
+FROM highschooler h1, highschooler h2
+JOIN friend f
+ON h1.ID = f.ID1 
+AND h2.ID = f.ID2
+GROUP BY f.ID1
+HAVING SUM(CASE WHEN h2.grade = h1.grade THEN 1 ELSE 0 END) = 0)
+
+Q3. What is the average number of friends per student? (EASY)
+
+SELECT avg(num_f)
+FROM
+(SELECT ID1, COUNT(ID2)as num_f
+FROM friend 
+GROUP BY ID1) sub
+
+Q4. Find the number of students who are either friends with Cassandra 
+or are friends of friends of Cassandra. (Medium)
+
+Do not count Cassandra, even though technically she is a friend of a friend. 
+(SELECT DISTINCT ID2
+FROM friend f
+JOIN highschooler h
+ON f.ID1 = h.ID
+WHERE h.name = 'Cassandra')
+
+UNION
+
+SELECT DISTINCT f2.ID2
+FROM friend f1
+JOIN friend f2, highschooler h1, highschooler h2
+ON f1.ID2 = f2.ID1
+AND f1.ID1 = h1.ID
+AND f2.ID2 = h2.ID
+WHERE h1.name = 'Cassandra' AND h2.name!='Cassandra' 
+
+Q5. Find the name and grade of the student(s) with the greatest number of friends. (Medium)
+
+SELECT name, grade
+FROM highschooler 
+WHERE ID IN 
+(SELECT ID1 AS ID
+FROM
+(SELECT ID1, COUNT(ID2) AS num_frds
+FROM friend
+GROUP BY ID1) sub1
+WHERE sub1.num_frds = 
+        (SELECT MAX(num_frds)
+        FROM 
+            (SELECT ID1, COUNT(ID2) AS num_frds
+             FROM friend
+             GROUP BY ID1) sub2))
+
+
 
 PART III. SQL Social-Network Modification Exercises
+
+Q2. If two students A and B are friends, and A likes B but not vice-versa, remove the Likes tuple. (Medium)
+DELETE FROM likes
+WHERE ID1 IN 
+(SELECT i.ID1
+FROM friend f
+JOIN
+(SELECT likes.ID1, likes.ID2
+FROM likes
+LEFT JOIN 
+(SELECT l1.ID1, l1.ID2
+FROM likes l1
+JOIN likes l2
+ON l1.ID2 = l2.ID1
+AND l2.ID2=l1.ID1) sub
+ON likes.ID1 = sub.ID1
+AND likes.ID2 = sub.ID2
+WHERE sub.ID1 IS NULL) i
+ON f.ID1 = i.ID1
+AND f.ID2 = i.ID2)
+
+AND ID2 IN 
+(SELECT i.ID2
+FROM friend f
+JOIN
+(SELECT likes.ID1, likes.ID2
+FROM likes
+LEFT JOIN 
+(SELECT l1.ID1, l1.ID2
+FROM likes l1
+JOIN likes l2
+ON l1.ID2 = l2.ID1
+AND l2.ID2=l1.ID1) sub
+ON likes.ID1 = sub.ID1
+AND likes.ID2 = sub.ID2
+WHERE sub.ID1 IS NULL) i
+ON f.ID1 = i.ID1
+AND f.ID2 = i.ID2)
+
+Q3. For all cases where A is friends with B, and B is friends with C, 
+add a new friendship for the pair A and C. 
+Do not add duplicate friendships, friendships that already exist, or friendships with oneself. 
+(This one is a bit challenging; congratulations if you get it right.) 
+
+INSERT INTO friend
+(SELECT sub.ID1, sub.ID2
+FROM
+(SELECT f1.ID1 as ID1, f2.ID2 as ID2
+FROM friend f1
+JOIN friend f2
+ON f1.ID2 = f2.ID1
+AND f1.ID1 = f2.ID2
+WHERE f1.ID1 != f2.ID2) sub
+LEFT JOIN friend f
+ON sub.ID1 = f.ID1
+AND sub.ID2 = f.ID2
+WHERE f.ID1 IS NULL)
+
+
+INSERT INTO friend
+SELECT sub.ID1, sub.ID2
+FROM (SELECT DISTINCT f1.ID1,f2.ID2
+      FROM friend f1
+      JOIN friend f2
+      ON f2.ID1 = f1.ID2
+      AND f2.ID2!= f1.ID1) sub
+LEFT JOIN friend f
+ON f.ID1 = sub.ID1
+AND f.ID2 = sub.ID2
+WHERE f.ID1 IS NULL
+
 
 
 /* For the following quries, you can run them on SQL MODE ANALYTICS */
@@ -436,6 +596,15 @@ JOIN
 FROM tutorial.yammer_events 
 WHERE occurred_at< '2014-07-31' AND occurred_at> '2014-06-30') b
 ON a.user_id = b.user_id
+
+
+
+
+
+
+
+
+
 
 
 
