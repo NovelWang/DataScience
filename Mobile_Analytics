@@ -1,0 +1,89 @@
+For most product, the goal of analytics is to increase retention and engagement. 
+When you think about how to improve retention or engagement, 
+f course you need to first define metrics for retention and engagement.
+
+1. As for engagement, it basically means how often/how much/how deep users engage in this product? 
+   Depending on the many features of the product, engage could mean many different kind of interaction. 
+   It could be login, search, download, watch a video, and so on.
+   Thus when you propose metrics to measure engagement, you can try to ask questions about user behavior.
+   
+   Take Netflix for example, you want to know:
+   How often (*frequency*) do users do certain activity?
+   How much (*time*) do users do certain activity within a certain period of time (e.g., a month)?
+   How many (*DAU/MAU*) users do certain activity within a certain period of time?
+   The certain activity here could be downloading a movie, watch a show, or search, add to watch-list, and so on.
+   
+2. Retention generally means how many of users who did a certain activity in last round of time also did the same activity in this round of time?
+   Of course, the certain activity here can mean many different types of interactions with the product.
+   
+3. Once you define the key metrics you want to use in your analysis, you need to then get the data to find the value of each of these metrics.
+
+
+4. Then you start your analysis. The point of your analysis is to discover insights. Thus you have to be clear about your goal. 
+   As mentioned before, for most cases, the goal is to increase engagement and retention, since in most cases, the improvement on
+   engagement and retention will lead to an increase in revenue.
+
+The following provides several frameworks to guide such analyses.
+
+5. Framework I: Segment customers based on their behaviors.
+(1) First, you find the descriptive differences between successful users and unsuccessful users:
+    e.g. What are the differences between users who tried for a month and cancelled the membership and the users who continue
+         their membership after the first month trial?
+    A. The difference in # of shows added to the watch-list within the first week of sign-up.
+    B. The difference in # of shows downloaded within the first week of sign-up.
+    C. The difference in total time watched on Netflix in the first month trial.
+    
+ (2) Let's say you found three important differences in the above metrics. 
+      # of shows added to the watch-list within the first week of sign-up for retained users are 6
+      # of shows added to the watch-list within the first week of sign-up for retained users are 4
+      
+      Now you can use this metric to define a behavior cohort.Basically, you segment all users to be either
+      users who have added at least 6 to the watch-list and users who have added less then 6 shows to the watch-list
+      Then you compare the retention rate between the two groups of users.
+      Then you can calculate how much the likelihood of retention will increase if you can push users to add at least 6 shows to the watch-list.
+      Of course, the relationship here is purely correlational. But it serves a great basis for future causal estimation.
+      
+      In fact, if your data suggests that if you can get users to add at least 6 shows to their watch-list within the first week,
+      the likelihood retention will increase 150%. You can basically say, adding 6 shows to watch-list is the magical threshold!!!
+      
+      With this magical threshold discovered, you can now work on how to optimize that magical threshold, or how to make uses to add
+      at least 6 shows to their to-watch-list within the first week of sign-up. 
+      
+      
+ 6. Framework II: Capture real usage on core functionality
+ Because engagement can mean many different types of interaction, you cannot watch the overall engagement, instead, you want users 
+ come back for the core functionality. For example, if 8% of users come back to the app every day but only 2% of users come back to 
+ watch videos, you need to think what are the other activities users do when they come back. Is it downloading? Is it searching?
+ You want to understand clearly what exactly is the core feature that brings users back to the app. To find out this, one thing you 
+ measure is the percentage of time that users spend on a certain activity among the total time users spend on the app. 
+ Or you can also measure the # of sessions including a certain activity/ # of total sessions to get an idea on how frequent users 
+ perform certain activity on the app.
+ Once you identified that core feature, you can check the retention curve on that core feature. Hopefully, the retention curve does not decrease that much
+ from day 0 to day 30. Otherwise, it means you app is not able to achieve product-market fit.
+ 
+ 7.Framework III: How to change customers' behavior towards the way you want?
+   Behavior = Motivation * Ability * Trigger
+   Motivate users for that behavior.
+   Make it easy for users to complete that behavior.
+  
+  
+ 8. Framework IV: Questioning the prevailing assumptions of mobile device
+    Living in SC, people take the high-end mobile devices and WI-FI and 4G for granted, but once considering market in other places,
+    many of popular assumptions need to be questioned!
+    A. Do they have WIFI or 4G?
+    B. Do they share devices, accounts?
+    C. Do they use IOS, Android, or other lower-end devices?
+    D. Do they have a culture of spending on video watching?
+    E. Do they well-versed in internet product to use the product effectively?
+    F. Do they understand every language, every phrase, and every icon on the app?
+    
+    
+    
+ 
+
+  
+  
+
+ 
+   
+   
