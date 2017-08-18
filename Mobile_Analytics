@@ -13,10 +13,18 @@ f course you need to first define metrics for retention and engagement.
    How many (*DAU/MAU*) users do certain activity within a certain period of time?
    The certain activity here could be downloading a movie, watch a show, or search, add to watch-list, and so on.
    
+   
+   Take Uber for example, you want to know:
+   How often do users search, search without available drivers, request a trip, successfully complete a trip requsted?
+   How many trips searched, requested, completed per week/month?
+   How many users did each of the activity within a month?
+   DAU (Daily active users on completing at least one trip), MAU.
+   
 2. Retention generally means how many of users who did a certain activity in last round of time also did the same activity in this round of time?
    Of course, the certain activity here can mean many different types of interactions with the product.
    
-3. Once you define the key metrics you want to use in your analysis, you need to then get the data to find the value of each of these metrics.
+3. Once you define the key metrics you want to use in your analysis, you need to then get the data to find the value of 
+each of these metrics.
 
 
 4. Then you start your analysis. The point of your analysis is to discover insights. Thus you have to be clear about your goal. 
