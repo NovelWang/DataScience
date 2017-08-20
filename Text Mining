@@ -1,0 +1,55 @@
+1. Tokenization
+
+Convert texts into tokens(words, n-grams, sentences)
+CountVectorizer() -- compute the count of each token
+TfidfVectorizer() -- compute the relative importance of each word in each document compared to the frequency of that words in all douments
+
+
+2. stop-words
+Remove the commonly used words
+
+
+3. TF-IDF
+
+
+4. Stemming and lemmatization
+https://nlp.stanford.edu/IR-book/html/htmledition/stemming-and-lemmatization-1.html
+reduce inflectional forms and derivationally related forms of a word to a common base form
+
+gone, went, going, goes -> go
+
+
+5. Part of speeching tagging (POS-tagger)
+http://www.nltk.org/book/ch05.html
+
+ classifying words into their parts of speech and labeling them accordingly is known as part-of-speech tagging, POS-tagging, 
+ or simply tagging. Parts of speech are also known as word classes or lexical categories. 
+ 
+ make -> verb
+ and -> conjunction
+ beautiful -> adj
+ 
+ 
+ 6. Named entity recognition
+ Labels sequence of words that are names of things (person, location, organization)
+
+
+7. Segmentation
+http://www.phontron.com/slides/nlp-programming-en-03-ws.pdf
+To segment a sentence into different words. 
+For example, for Chinese and Japanese, a sentence is written as a series of characters without space. 
+So you need to add space in between to segment a sentence.
+
+
+8. word sense disambiguation
+https://web.stanford.edu/~jurafsky/slp3/slides/Chapter18.wsd.pdf
+Given a word in context and a fixed inventory of potential word senses -> decide which sense of the word this is
+
+
+9. spelling correction
+https://nlp.stanford.edu/IR-book/html/htmledition/spelling-correction-1.html
+
+
+
+
+
