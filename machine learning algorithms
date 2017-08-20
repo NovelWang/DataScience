@@ -1,0 +1,115 @@
+I. Unsupervised
+
+1. Clustering
+
+(1) K-means
+A. know how it works: set the initial centriods --> determine the cluster membership for each point --> re-calculate new centroids 
+--> iterate until no data points change cluster membership
+
+B. Use elbow function to find the best k.
+
+C. To deal with bad local optima, can try multiple times of random initialization.
+
+(2) Gaussian Mixture / Expectation-Maximization Algorithm
+A. Assume each cluster is a gaussian distribution with its mean and variance -(-> then calculate the probability of each point under that ditsribution
+to decide how likely that point is in that cluster --> update/change mean and variance of each gaussian distribution --> keep iterating until convergence
+
+
+2. Anomaly detection
+(1) Gaussian distribution or multivariate gaussian distribution
+Estimate gaussian distribution on the data --> calculate the probability of each data point and compare with a threshold --> 
+if the probability is less than the threshold, then that point is considered as an anomaly.
+
+
+3. Principal component analysis (PCA)
+A. How it works:
+center/normalize each feature --> compute the covariance matrix, eigen vector (will be principal components), eigen value(variance along that principla component)
+--> project data points into the new dimensions --> pick the first m eigen vectors so that they explain 90% of total variance
+(Or you can choose elbow point)
+
+
+4. Linear Discriminant Analysis (LDA)
+Pick a new dimension that gives max separation between means of projected class and min variance within each projected class,
+so that the new dimension is most discriminatory in the mean. (LDA will thus fail is the most discriminatory information is not
+in the mean but in the variance of the data).
+
+
+II. Supervised 
+1. Linear regression
+
+2. Logistic regression 
+
+Regularization:
+(1) Ridge L2
+penalize the square of the magnitude of coefficients
+
+(2) Lasso L1
+penalize the absolute magnitude of coefficients
+
+3. Decision tree
+(1) General idea: split the training data into clusters based on the features so that you can sort the whole training set into pure subsets.
+
+(2) Alogirthm:
+Find a certain feature A as a node -> for each value of A, create a new child node -> split all observations in the training set into the different child nodes
+-> for each child node, keep splitting (iterating) until the subset is pure (all yes or all no)
+
+(3) How to decide the best attribute to split?
+Always split on the feature that gives you the maximum information gain.
+
+What is information gain: how much splitting do you have left to do?
+
+Use entropy (how uncertain you are about differentiating the two classes) to measure the uncertainty/purity of subsets.
+when p is 0.5, entropy is the largest. When the set is pure, entropy is 0; when the set is completely random (p = 0.5), entropy is 1.
+
+Then Compute the entropy before and after the split to get the information gain. In the calculation,
+you need to consider both entropy and weight of each entropy(# of observation in that subset/# of total observations in the parent node)
+
+(4) Overfitting:
+Because decision tree will keep splitting until each node contains pure subsets, so it will classify each training example perfectly.
+Thus it causes overfitting.
+To deal with overfitting, we use the validation set to prune the tree.
+
+(5) Pros and Cons
+Pros: easily handle noise (pick up useful features) and fast run
+Cons: greedy (leads to overfitting) and it can only creates axis aligned splits of the data (it put threshold on each feature individually, 
+not like logistic regression can draw a signe boundary with a combination of many different features.)
+
+4. Random (Decision) Forest -- avoid overfitting caused by greedy decision tree
+pick a random subset of training data + pick a random subset of reatures --> grow a decision tree
+repeat this for different subsets so you get many decision tree t1, t2, ... tk
+classify a new data point based on all of the k trees (predict to be the majority vote)
+
+Pros over decision tree:
+The different trees are independent, and thus reduce overfitting. It can also work with a large number of predictors.
+
+5. Bagging decision tree
+All features are used to grow trees on different random subsets of traning data.
+
+
+6. Boosting decision tree
+Fit large and small trees to re-weighted versions of the training data and then you classify by weighted majority vote.
+
+
+7. Naive Bayes
+P(y|x) = p(x|y)*p(y)
+Use features X1, X2, ...Xd to predict Y, sssume X1, X2,..., and Xd are conditionally independent given Y 
+(i.e., the class value explains all the dependence between attributes).
+
+Example: see spam/ham classification of emails
+
+8. Support Vector Machine
+Find the best seprating/discriminative hyperplane that gives the largest minimum distance to the training examples.
+And, it also maximizes the margin of the training data.
+
+
+
+
+
+
+
+
+
+
+
+
+
