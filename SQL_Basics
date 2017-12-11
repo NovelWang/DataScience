@@ -1,3 +1,58 @@
+----------------------------------------------------------- Basic SQL Syntax -----------------------------------------------
+
+1. Basic syntax
+SELECT (CASE ... WHEN... THEN... END)
+FROM
+JOIN 
+ON 
+WHERE 
+GROUP BY 
+HAVING 
+ORDER BY 
+
+Note:
+1) Having is a clean way to filter aggregrated columns
+2) There are 5 aggregrate functions: max, min, count, sum, avg
+COUNT (*) = COUNT(1) -- including null values
+COUNT(col_name) ---- ignoring null values
+AVG(col_name) ---- ignoring null values
+3) Distinct can be useful but could be slow to run
+4) CASE WHEN is often used when counting multiple conditions for a certain column
+5) different types of joins
+A. Inner join
+B. Left outer join
+C. Right outer join
+D. Full outer join
+E. Cross join  (Return the cartesian product of two tables and does not need a on condition)
+
+
+
+2. SQL logical operators
+LIKE
+ILIKE
+IN
+BETWEEN  AND
+IS NULL
+AND
+OR NOT
+
+3. CAST a column's data type
+col_name::integer
+
+eg. 
+SELECT funded_at::timestamp + INTERVAL '1 month' AS one_month_after_funded
+FROM table1
+WHERE funded_at IS NOT NULL
+
+
+4. More about data wrangling with SQL: please see Mode SQL Analytics
+
+
+
+
+-----------------------------------------------------Interview Practice Questions ------------------------------------------
+
+
 1. USE SQL to create a histogram (distribution of a column)
 
 First, we need to define the # of bins and calculate the min, max, and the size of bucket:
@@ -7,13 +62,13 @@ SELECT (max(open) - min(open)+1)/10.00 as bucket_size, max(open), min(open)
 FROM tutorial.aapl_historical_stock_price
 
 OUTPUT:
--70.241  702.41  0
+70.241  702.41  0
 
 Then we need to assign each row to the bucket from 0 to 9 using floor().
-SELECT floor(open-0)/70.341, COUNT(*) as num_of_observations
+SELECT floor(open-0)/70.241 as bucket, COUNT(*) as num_of_observations
 FROM tutorial.aapl_historical_stock_price
-GROUP BY 1
-ORDER BY 1
+GROUP BY bucket
+ORDER BY bucket
 
 
 
