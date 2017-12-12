@@ -139,6 +139,24 @@ GROUP BY 1
 4. Check the questions here:
 https://github.com/joshualande/joshualande.github.io/blob/master/_drafts/2014-06-07-analytics-sql.md
 
+client
+client_id  client_name
+0           iphone
+
+actions
+action_id  action_name
+0           front_page
+
+users
+user_id     user_name
+0           Steve
+
+
+engagement
+date_id     user_id     client_id   action_id
+20171211        1           2           3
+
+
 For each user in the last month, compute the number of days that the user logged in.
 Next, for each rolling 30 day period, compute the number of login days.
 
